@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - {{ username }}</title>
+</head>
+<body>
+    <h1>Welcome, {{ username }}!</h1>
+
+    <!-- Recommended Content -->
+    <h2>Recommended Content:</h2>
+    <ul>
+        {% for recommendation in recommendations %}
+        <li>
+            <strong>{{ recommendation.id }}</strong>: {{ recommendation.description }}
+        </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Chatbot Section -->
+    <h2>Ask a Question</h2>
+    <form id="chat-form">
+        <label for="query">Your Question:</label>
+        <input type="text" id="query" name="query" required><br><br>
+        <button type="submit">Ask</button>
+    </form>
+    <div id="chat-response"></div>
+
+    <!-- Logout Link -->
+    <a href="/logout">Logout</a>
+
+    <!-- JavaScript for Chatbot -->
+    <script>
+        document.getElementById("chat-form").addEventListener("submit", async function(e) {
+            e.preventDefault(); // Prevent form submission from refreshing the page
+        
+            // Get the user's query
+            const queryInput = document.getElementById("query");
+            const query = queryInput.value.trim();
+        
+            // Validate the query
+            if (!query) {
+                document.getElementById("chat-response").innerText = "Please enter a valid question.";
+                return;
+            }
+        
+            // Send the query to the backend
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query }) // Ensure the query is sent as JSON
+                });
+        
+                // Parse the response
+                const data = await response.json();
+                document.getElementById("chat-response").innerText = data.response;
+            } catch (error) {
+                document.getElementById("chat-response").innerText = "An error occurred while processing your request.";
+            }
+        });
+        </script>
+</body>
+</html>
