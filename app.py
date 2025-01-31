@@ -2,9 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from services.user_service import UserService
 from services.learning_service import LearningService
 from models.chatbot_agent import ChatbotAgent
+import os
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # For session management
+
+app.secret_key = os.getenv("SECRET_KEY") # For session management
 
 # Initialize services
 user_service = UserService()
