@@ -3,162 +3,252 @@
 ## Table of Contents
 1. [System Overview](#system-overview)
 2. [Architecture](#architecture)
-3. [Components](#components)
-4. [Database Schema](#database-schema)
-5. [API Endpoints](#api-endpoints)
-6. [Services](#services)
-7. [Models](#models)
-8. [Configuration](#configuration)
-9. [Deployment](#deployment)
+3. [Class Diagram](#class-diagram)
+4. [Component Details](#component-details)
+5. [Service Layer](#service-layer)
+6. [Model Layer](#model-layer)
+7. [API Layer](#api-layer)
+8. [Database Layer](#database-layer)
+9. [Configuration](#configuration)
+10. [Deployment](#deployment)
 
 ## System Overview
 
-The Personalized Learning Platform is a Flask-based web application that provides personalized learning content recommendations and an interactive chatbot. The system uses Natural Language Processing (NLP) techniques and recommendation algorithms to deliver tailored content to users based on their interests.
+The Personalized Learning Platform is a Flask-based web application that provides personalized learning content recommendations and an interactive chatbot. The system leverages Natural Language Processing (NLP) techniques and recommendation algorithms to deliver tailored content to users based on their interests.
 
 ### Key Features
 - User authentication and profile management
-- Personalized content recommendations
-- Interactive AI-powered chatbot
-- User dashboard with recommendations
+- Personalized content recommendations using NLP
+- Interactive AI-powered chatbot using T5 model
+- User dashboard with dynamic recommendations
 - Interest-based learning paths
 
 ## Architecture
 
-The application follows a modular architecture with clear separation of concerns:
+The application follows a layered architecture pattern with clear separation of concerns:
 
 ```
 personalized-learning-platform/
-├── app.py                 # Main application entry point
-├── models/               # Data models and ML components
-├── services/            # Business logic services
-├── templates/           # HTML templates
-├── utils/              # Utility functions
+├── app.py                 # Main application entry point and API routes
+├── models/               # Domain models and ML components
+│   ├── chatbot_agent.py  # T5-based chatbot implementation
+│   ├── nlp_model.py      # Text processing and embeddings
+│   └── recommendation.py # Content recommendation engine
+├── services/            # Business logic and orchestration
+│   ├── user_service.py   # User management and authentication
+│   └── learning_service.py # Content and recommendation management
+├── utils/              # Utility functions and helpers
+│   └── database_utils.py # Database operations
+├── templates/           # HTML templates for web interface
 ├── config/             # Configuration files
-└── data/              # Data storage
+└── data/              # Data storage and resources
 ```
 
-## Components
+## Class Diagram
 
-### 1. Main Application (app.py)
-The main Flask application that handles:
-- Route definitions
-- Request handling
-- Session management
-- Service initialization
-- Error handling
+```mermaid
+classDiagram
+    class Flask {
+        +route()
+        +run()
+    }
+    
+    class UserService {
+        -db_utils: DatabaseUtils
+        +authenticate(username, password)
+        +get_user(username)
+        +add_user(username, password, interests)
+    }
+    
+    class LearningService {
+        -db_utils: DatabaseUtils
+        -nlp_model: NLPModel
+        -recommendation_engine: RecommendationEngine
+        +get_recommendations(username)
+        -_load_content()
+    }
+    
+    class ChatbotAgent {
+        -chatbot: Pipeline
+        +query(user_query)
+    }
+    
+    class NLPModel {
+        -model: Pipeline
+        +preprocess_text(text)
+        +get_text_embedding(text)
+    }
+    
+    class RecommendationEngine {
+        -content_embeddings: Dict
+        +add_content(content_id, content_text, nlp_model)
+        +recommend(user_embedding)
+    }
+    
+    class DatabaseUtils {
+        +_initialize_db()
+        +get_user(username)
+        +add_user(username, password, interests)
+        +get_all_content()
+        +get_content_by_id(content_id)
+    }
+    
+    Flask --> UserService
+    Flask --> LearningService
+    Flask --> ChatbotAgent
+    LearningService --> NLPModel
+    LearningService --> RecommendationEngine
+    LearningService --> DatabaseUtils
+    UserService --> DatabaseUtils
+```
 
-### 2. Models
-Located in `/models/`:
+## Component Details
 
-#### ChatbotAgent (chatbot_agent.py)
-- Handles natural language processing
-- Manages conversation context
-- Generates responses using pre-trained models
+### Service Layer Classes
 
-#### NLPModel (nlp_model.py)
-- Text processing utilities
-- Embedding generation
-- Semantic analysis
+#### UserService
+**Purpose**: Manages user authentication and profile operations
+**Dependencies**: DatabaseUtils
+**Key Methods**:
+- `authenticate(username, password)`: Validates user credentials
+- `get_user(username)`: Retrieves user profile
+- `add_user(username, password, interests)`: Creates new user accounts
 
-#### Recommendation (recommendation.py)
-- Content recommendation algorithms
-- User similarity calculations
-- Interest-based filtering
+#### LearningService
+**Purpose**: Orchestrates content recommendations and learning paths
+**Dependencies**: DatabaseUtils, NLPModel, RecommendationEngine
+**Key Methods**:
+- `get_recommendations(username)`: Generates personalized content recommendations
+- `_load_content()`: Initializes content in recommendation engine
 
-### 3. Services
+### Model Layer Classes
 
-#### UserService (user_service.py)
-- User authentication
-- Profile management
-- Interest tracking
-- Session handling
+#### ChatbotAgent
+**Purpose**: Provides conversational AI capabilities
+**Dependencies**: Hugging Face T5 model
+**Key Methods**:
+- `query(user_query)`: Processes user questions and generates responses
 
-#### LearningService (learning_service.py)
-- Content recommendation generation
-- Learning path creation
-- Progress tracking
-- Content filtering
+#### NLPModel
+**Purpose**: Handles text processing and embedding generation
+**Dependencies**: Hugging Face DistilBERT model
+**Key Methods**:
+- `preprocess_text(text)`: Cleans and normalizes text input
+- `get_text_embedding(text)`: Generates vector embeddings for text
 
-## API Endpoints
+#### RecommendationEngine
+**Purpose**: Implements content recommendation algorithms
+**Dependencies**: scikit-learn
+**Key Methods**:
+- `add_content(content_id, content_text, nlp_model)`: Indexes new content
+- `recommend(user_embedding)`: Generates recommendations using cosine similarity
 
-### Authentication Routes
-- `GET, POST /` - Home page and login
-- `GET, POST /register` - User registration
-- `GET /logout` - User logout
+## Service Layer Interactions
 
-### Main Features
-- `GET /dashboard` - User dashboard with recommendations
-- `POST /chat` - Chatbot interaction endpoint
+### Authentication Flow
+1. User submits credentials via Flask route
+2. UserService.authenticate validates credentials
+3. Flask session stores authenticated user
+4. Subsequent requests check session state
 
-## Database Schema
+### Recommendation Flow
+1. User accesses dashboard
+2. LearningService retrieves user profile
+3. NLPModel generates embeddings for user interests
+4. RecommendationEngine compares with content embeddings
+5. Sorted recommendations returned to user
 
-The application uses SQLite for data storage with the following main tables:
+## API Layer
 
-### Users Table
-- username (PRIMARY KEY)
-- password_hash
-- interests
-- created_at
+### REST Endpoints
+All routes are defined in `app.py`:
 
-### Content Table
-- content_id (PRIMARY KEY)
-- title
-- description
-- tags
-- difficulty_level
+#### Authentication Routes
+```python
+@app.route("/", methods=["GET", "POST"])
+@app.route("/register", methods=["GET", "POST"])
+@app.route("/logout")
+```
 
-### UserInteractions Table
-- interaction_id (PRIMARY KEY)
-- user_id (FOREIGN KEY)
-- content_id (FOREIGN KEY)
-- interaction_type
-- timestamp
+#### Feature Routes
+```python
+@app.route("/dashboard")
+@app.route("/chat", methods=["POST"])
+```
+
+## Database Layer
+
+### Schema Design
+The application uses SQLite with the following schema:
+
+#### Users Table
+```sql
+CREATE TABLE users (
+    username TEXT PRIMARY KEY,
+    password TEXT,
+    interests TEXT
+)
+```
+
+#### Content Table
+```sql
+CREATE TABLE content (
+    id TEXT PRIMARY KEY,
+    description TEXT
+)
+```
 
 ## Configuration
 
-The application uses environment variables for configuration:
-- `SECRET_KEY` - Flask session encryption key
-- Database connection settings
-- Model parameters
-- API keys for external services
+### Environment Variables
+Required environment variables:
+```bash
+SECRET_KEY=<flask-session-key>
+DATABASE_PATH=<path-to-sqlite-db>
+```
+
+### Model Configuration
+- Chatbot: google/flan-t5-large
+- Embeddings: distilbert-base-uncased
 
 ## Deployment
 
 ### Prerequisites
 - Python 3.10+
 - pip or pipenv
-- Required Python packages (listed in requirements.txt)
+- Required packages in requirements.txt
 
-### Setup Steps
-1. Clone the repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Set up environment variables
-4. Initialize the database
-5. Run the application: `python app.py`
+### Production Setup
+1. Clone repository
+2. Install dependencies
+3. Configure environment variables
+4. Initialize database
+5. Deploy with production WSGI server
 
-### Production Deployment
-For production deployment:
-- Use a production-grade WSGI server (e.g., Gunicorn)
-- Set up proper SSL/TLS certificates
-- Configure proper database backup
-- Implement proper logging
-- Set up monitoring
-
-## Security Considerations
-
-The platform implements several security measures:
-- Password hashing
+### Security Measures
+- Password hashing (TODO: implement bcrypt)
 - Session management
 - Input validation
 - CSRF protection
-- Rate limiting on API endpoints
+- Rate limiting
 
 ## Future Enhancements
 
-Planned improvements include:
-1. Integration with external learning content providers
-2. Advanced recommendation algorithms using collaborative filtering
+### Planned Features
+1. External content provider integration
+2. Advanced recommendation algorithms
+   - Collaborative filtering
+   - Deep learning models
 3. Enhanced chatbot capabilities
-4. Mobile application support
+   - Context awareness
+   - Multi-turn conversations
+4. Mobile application
 5. Real-time progress tracking
-6. Social learning features 
+6. Social learning features
+
+### Technical Improvements
+1. Implement proper password hashing
+2. Add comprehensive test suite
+3. Set up CI/CD pipeline
+4. Add performance monitoring
+5. Implement caching layer 

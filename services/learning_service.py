@@ -5,6 +5,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 class LearningService:
     def __init__(self):
+        """
+        Initializes the LearningService.
+        Sets up database utils, NLP model, and recommendation engine.
+        Loads initial content into the recommendation engine.
+        """
         self.db_utils = DatabaseUtils()
         self.nlp_model = NLPModel()
         self.recommendation_engine = RecommendationEngine()

@@ -2,6 +2,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 class RecommendationEngine:
     def __init__(self):
+        """
+        Initializes the recommendation engine.
+        Creates an empty dictionary to store content embeddings.
+        """
         self.content_embeddings = {}  # Stores embeddings for learning content
 
     def add_content(self, content_id, content_text, nlp_model):

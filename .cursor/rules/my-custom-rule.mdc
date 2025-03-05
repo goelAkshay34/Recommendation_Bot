@@ -1,0 +1,10 @@
+---
+description: Document-As-Code
+globs: *.md
+---
+
+# Document As Code
+
+- Your task is to generate a document that explains the entire codebase and take reference from the existing document [codebase_documentation.md](mdc:docs/codebase_documentation.md). Your task includes developing a sevice level documentation, followed by class modules, how are they interlinked, add UML diagram, include which functions are part of the class. 
+- This document should act as an single point of understanding the entire codebase. 
+- Make relevant updates to the existing document (md file)

@@ -1,0 +1,10 @@
+---
+description: Add Docstring Rule
+globs: *.py
+---
+
+# System Prompt
+
+- Your task is crawl in the entire codebase and look for py files where docstring is missing. 
+- Once all the methods are identified with missing docstring, you need to understand and analyze the purpose of function and recommend a docstring in those methods.
+- Ask feedbacks from user and make relevant edits.

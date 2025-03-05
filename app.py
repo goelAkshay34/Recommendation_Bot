@@ -15,6 +15,14 @@ chatbot_agent = ChatbotAgent()
 
 @app.route("/", methods=["GET", "POST"])
 def home():
+    """
+    Handles the home page route.
+    GET: Displays the login form.
+    POST: Processes user login.
+    Returns:
+        GET: Rendered home page template.
+        POST: Redirects to dashboard on success, error message on failure.
+    """
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
@@ -27,6 +35,14 @@ def home():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    """
+    Handles user registration.
+    GET: Displays the registration form.
+    POST: Processes new user registration.
+    Returns:
+        GET: Rendered registration form.
+        POST: Redirects to home on success, error message if username exists.
+    """
     if request.method == "POST":
         new_username = request.form.get("new_username")
         new_password = request.form.get("new_password")
@@ -46,6 +62,12 @@ def register():
 
 @app.route("/dashboard")
 def dashboard():
+    """
+    Displays the user dashboard with personalized recommendations.
+    Requires user authentication.
+    Returns:
+        Rendered dashboard template with user recommendations or redirects to home if not authenticated.
+    """
     if "username" not in session:
         return redirect(url_for("home"))
     username = session["username"]
@@ -54,6 +76,13 @@ def dashboard():
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    """
+    Handles chatbot interactions.
+    Processes user queries and returns chatbot responses.
+    Requires user authentication.
+    Returns:
+        JSON response containing chatbot's answer or error message.
+    """
     if "username" not in session:
         return redirect(url_for("home"))
 
@@ -80,6 +109,12 @@ def chat():
 
 @app.route("/logout")
 def logout():
+    """
+    Handles user logout.
+    Clears the user session.
+    Returns:
+        Redirects to home page.
+    """
     session.pop("username", None)
     return redirect(url_for("home"))
 
