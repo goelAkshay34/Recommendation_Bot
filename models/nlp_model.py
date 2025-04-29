@@ -3,6 +3,11 @@ import string
 
 class NLPModel:
     def __init__(self, model_name="distilbert-base-uncased"):
+        """
+        Initializes the NLP model for text processing.
+        Args:
+            model_name (str): Name of the pre-trained model to use. Defaults to "distilbert-base-uncased".
+        """
         self.model = pipeline("feature-extraction", model=model_name)
 
     def preprocess_text(self, text):

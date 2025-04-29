@@ -2,6 +2,10 @@ from utils.database_utils import DatabaseUtils
 
 class UserService:
     def __init__(self):
+        """
+        Initializes the UserService.
+        Creates an instance of DatabaseUtils for database operations.
+        """
         self.db_utils = DatabaseUtils()
 
     def authenticate(self, username, password):
